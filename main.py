@@ -45,7 +45,7 @@ class Ui_Form(object):
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
-        self.listWidget.clicked.connect(self.select_item)
+        self.listWidget.clicked.connect(self.check_item)
         self.clear_btn.clicked.connect(self.clear)
         self.change_btn.clicked.connect(self.change)
         self.init_shortcuts()
@@ -63,6 +63,8 @@ class Ui_Form(object):
             QtGui.QKeySequence('Shift+Return'), self.listWidget
         )
         list_widget_shortcut.activated.connect(self.add)
+        list_widget_shortcut = QtWidgets.QShortcut(QtGui.QKeySequence('Space'), self.listWidget)
+        list_widget_shortcut.activated.connect(self.check_item)
 
     def init_buttons(self, layout: QtWidgets.QHBoxLayout, Form):
         """Initialization of buttons.
@@ -112,7 +114,7 @@ class Ui_Form(object):
         """Remove current item."""
         self.listWidget.takeItem(self.listWidget.currentRow())
 
-    def select_item(self):
+    def check_item(self):
         """Check current item."""
         item = self.listWidget.currentItem()
         font = QtGui.QFont()
