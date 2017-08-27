@@ -4,6 +4,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 def build_list_item() -> QtWidgets.QListWidgetItem:
+    """Create an item for a check list."""
     item = QtWidgets.QListWidgetItem()
     font = QtGui.QFont()
     font.setStrikeOut(False)
@@ -22,6 +23,11 @@ class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
         Form.resize(540, 313)
+
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("icon_16.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        Form.setWindowIcon(icon)
+
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(Form)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.verticalLayout = QtWidgets.QVBoxLayout()
@@ -34,7 +40,7 @@ class Ui_Form(object):
         self.buttons_layout = QtWidgets.QHBoxLayout()
         self.buttons_layout.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
         self.buttons_layout.setObjectName("buttons_layout")
-        self.init_buttons(self.buttons_layout)
+        self.init_buttons(self.buttons_layout, Form)
         self.verticalLayout_2.addLayout(self.buttons_layout)
 
         self.retranslateUi(Form)
@@ -58,7 +64,7 @@ class Ui_Form(object):
         )
         list_widget_shortcut.activated.connect(self.add)
 
-    def init_buttons(self, layout: QtWidgets.QHBoxLayout):
+    def init_buttons(self, layout: QtWidgets.QHBoxLayout, Form):
         """Initialization of buttons.
 
         Buttons:
@@ -129,10 +135,14 @@ class Ui_Form(object):
         self.clear_btn.setText(_translate("Form", "Clear"))
 
 
-if __name__ == "__main__":
+def main():
     app = QtWidgets.QApplication(sys.argv)
     Form = QtWidgets.QWidget()
     ui = Ui_Form()
     ui.setupUi(Form)
     Form.show()
     sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    main()
