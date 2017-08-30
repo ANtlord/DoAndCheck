@@ -65,6 +65,8 @@ class Ui_Form(object):
         list_widget_shortcut.activated.connect(self.add)
         list_widget_shortcut = QtWidgets.QShortcut(QtGui.QKeySequence('Space'), self.listWidget)
         list_widget_shortcut.activated.connect(self.check_item)
+        list_widget_shortcut = QtWidgets.QShortcut(QtGui.QKeySequence('F2'), self.listWidget)
+        list_widget_shortcut.activated.connect(self.change)
 
     def init_buttons(self, layout: QtWidgets.QHBoxLayout, Form):
         """Initialization of buttons.
