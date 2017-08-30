@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
+from typing import Callable
 
 
 def build_list_item() -> QtWidgets.QListWidgetItem:
@@ -34,6 +35,7 @@ class Ui_Form(object):
         self.verticalLayout.setObjectName("verticalLayout")
         self.listWidget = QtWidgets.QListWidget(Form)
         self.listWidget.setObjectName("listWidget")
+        self.listWidget.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
 
         self.verticalLayout.addWidget(self.listWidget)
         self.verticalLayout_2.addLayout(self.verticalLayout)
@@ -67,6 +69,29 @@ class Ui_Form(object):
         list_widget_shortcut.activated.connect(self.check_item)
         list_widget_shortcut = QtWidgets.QShortcut(QtGui.QKeySequence('F2'), self.listWidget)
         list_widget_shortcut.activated.connect(self.change)
+        list_widget_shortcut = QtWidgets.QShortcut(QtGui.QKeySequence('Shift+Up'), self.listWidget)
+        list_widget_shortcut.activated.connect(self.move_item_up)
+        list_widget_shortcut = QtWidgets.QShortcut(
+            QtGui.QKeySequence('Shift+Down'), self.listWidget
+        )
+        list_widget_shortcut.activated.connect(self.move_item_down)
+
+    def _move_current_item(self, stop_row, new_row_func: Callable[[int], int]):
+        row = self.listWidget.currentRow()
+        if row == stop_row:
+            return
+        item = self.listWidget.takeItem(row)
+        self.listWidget.insertItem(new_row_func(row), item)
+        self.listWidget.setCurrentRow(new_row_func(row))
+
+    def move_item_up(self):
+        """Move current item to up by one position."""
+        self._move_current_item(0, lambda x: x - 1)
+
+    def move_item_down(self):
+        """Move current item to down by one position."""
+        last_index = self.listWidget.count() - 1
+        self._move_current_item(last_index, lambda x: x + 1)
 
     def init_buttons(self, layout: QtWidgets.QHBoxLayout, Form):
         """Initialization of buttons.
