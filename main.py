@@ -20,13 +20,45 @@ def build_list_item() -> QtWidgets.QListWidgetItem:
     return item
 
 
+def _build_btn(
+    name: str, callback: Callable, layout: QtWidgets.QHBoxLayout, form,
+) -> QtWidgets.QPushButton:
+    button = QtWidgets.QPushButton(form)
+    button.clicked.connect(callback)
+    button.setObjectName(name)
+    layout.addWidget(button)
+    return button
+
+
+class Widget(QtWidgets.QWidget):
+    def closeEvent(self, event):
+        super().closeEvent(event)
+        self.hide()
+
+
+class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
+    def __init__(self, icon, parent: Widget):
+        super().__init__(icon, parent)
+        self.activated.connect(self.qwe)
+        self.flag = False
+        self.setToolTip("Do And Check")
+
+    def qwe(self):
+        widget: Widget = self.parent()
+        if widget.isVisible():
+            self.parent().hide()
+        else:
+            self.parent().show()
+            self.parent().activateWindow()
+
+
 class Ui_Form(object):
-    def setupUi(self, Form):
+    def setupUi(self, Form: Widget):
         Form.setObjectName("Form")
         Form.resize(540, 313)
 
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("icon_16.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("icon_32.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         Form.setWindowIcon(icon)
 
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(Form)
@@ -48,8 +80,6 @@ class Ui_Form(object):
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
         self.listWidget.clicked.connect(self.check_item)
-        self.clear_btn.clicked.connect(self.clear)
-        self.change_btn.clicked.connect(self.change)
         self.init_shortcuts()
 
     def init_shortcuts(self):
@@ -58,23 +88,22 @@ class Ui_Form(object):
         Available shortcuts:
             * Del - delete current check list item.
             * Shift + Enter (Shift + Retrurn) - add an item.
+            * F2 - rename selected item.
+            * Shift + Up / Shift + Down - move selected item.
+            * Space - check selected item.
         """
-        list_widget_shortcut = QtWidgets.QShortcut(QtGui.QKeySequence('Del'), self.listWidget)
-        list_widget_shortcut.activated.connect(self.remove)
-        list_widget_shortcut = QtWidgets.QShortcut(
-            QtGui.QKeySequence('Shift+Return'), self.listWidget
-        )
-        list_widget_shortcut.activated.connect(self.add)
-        list_widget_shortcut = QtWidgets.QShortcut(QtGui.QKeySequence('Space'), self.listWidget)
-        list_widget_shortcut.activated.connect(self.check_item)
-        list_widget_shortcut = QtWidgets.QShortcut(QtGui.QKeySequence('F2'), self.listWidget)
-        list_widget_shortcut.activated.connect(self.change)
-        list_widget_shortcut = QtWidgets.QShortcut(QtGui.QKeySequence('Shift+Up'), self.listWidget)
-        list_widget_shortcut.activated.connect(self.move_item_up)
-        list_widget_shortcut = QtWidgets.QShortcut(
-            QtGui.QKeySequence('Shift+Down'), self.listWidget
-        )
-        list_widget_shortcut.activated.connect(self.move_item_down)
+        shortcuts = {
+            'Del': self.remove,
+            'Shift+Return': self.add,
+            'Space': self.check_item,
+            'F2': self.change,
+            'Shift+Up': self.move_item_up,
+            'Shift+Down': self.move_item_down,
+            'Ctrl+Q': QtWidgets.qApp.quit,
+        }
+        for key, callback in shortcuts.items():
+            list_widget_shortcut = QtWidgets.QShortcut(QtGui.QKeySequence(key), self.listWidget)
+            list_widget_shortcut.activated.connect(callback)
 
     def _move_current_item(self, stop_row, new_row_func: Callable[[int], int]):
         row = self.listWidget.currentRow()
@@ -93,7 +122,7 @@ class Ui_Form(object):
         last_index = self.listWidget.count() - 1
         self._move_current_item(last_index, lambda x: x + 1)
 
-    def init_buttons(self, layout: QtWidgets.QHBoxLayout, Form):
+    def init_buttons(self, layout: QtWidgets.QHBoxLayout, form):
         """Initialization of buttons.
 
         Buttons:
@@ -102,21 +131,10 @@ class Ui_Form(object):
             * self.delete_btn - button to delete current item.
             * self.clear - button to remove all items.
         """
-        self.add_btn = QtWidgets.QPushButton(Form)
-        self.add_btn.clicked.connect(self.add)
-        self.add_btn.setObjectName("add_btn")
-        layout.addWidget(self.add_btn)
-        self.change_btn = QtWidgets.QPushButton(Form)
-        self.change_btn.setObjectName("change_btn")
-        layout.addWidget(self.change_btn)
-        self.delete_btn = QtWidgets.QPushButton(Form)
-        self.delete_btn.setObjectName("delete_btn")
-        self.delete_btn.clicked.connect(self.remove)
-        layout.addWidget(self.delete_btn)
-        self.clear_btn = QtWidgets.QPushButton(Form)
-        self.clear_btn.setStyleSheet("")
-        self.clear_btn.setObjectName("clear_btn")
-        layout.addWidget(self.clear_btn)
+        self.add_btn = _build_btn('add_btn', self.add, layout, form)
+        self.change_btn = _build_btn("change_btn", self.change, layout, form)
+        self.delete_btn = _build_btn("delete_btn", self.remove, layout, form)
+        self.clear_btn = _build_btn("clear_btn", self.clear, layout, form)
 
     def _start_current_item_edition(self):
         """Adds a flag provides an editing to current item and start editing of the item."""
@@ -166,10 +184,12 @@ class Ui_Form(object):
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
-    Form = QtWidgets.QWidget()
+    widget = Widget()
+    trayIcon = SystemTrayIcon(QtGui.QIcon("icon_32.png"), widget)
+    trayIcon.show()
     ui = Ui_Form()
-    ui.setupUi(Form)
-    Form.show()
+    ui.setupUi(widget)
+    widget.show()
     sys.exit(app.exec_())
 
 
