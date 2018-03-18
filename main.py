@@ -39,12 +39,12 @@ class Widget(QtWidgets.QWidget):
 class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
     def __init__(self, icon, parent: Widget):
         super().__init__(icon, parent)
-        self.activated.connect(self.qwe)
+        self.activated.connect(self.toggle_hidden)
         self.flag = False
         self.setToolTip("Do And Check")
 
-    def qwe(self):
-        widget: Widget = self.parent()
+    def toggle_hidden(self):
+        widget = self.parent()
         if widget.isVisible():
             self.parent().hide()
         else:
