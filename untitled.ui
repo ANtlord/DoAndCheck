@@ -17,6 +17,18 @@
    <iconset>
     <normaloff>icon_16.png</normaloff>icon_16.png</iconset>
   </property>
+  <property name="styleSheet">
+   <string notr="true">QPushButton {
+	background: #444;
+	color: white;
+}
+QPushButton:hover {
+	background: #303030;
+}
+QPushButton:pressed{
+	background: black;
+}</string>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -60,6 +72,9 @@
      </property>
      <item>
       <widget class="QPushButton" name="pushButton_2">
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
        <property name="text">
         <string>Add</string>
        </property>
@@ -74,6 +89,12 @@
      </item>
      <item>
       <widget class="QPushButton" name="pushButton">
+       <property name="cursor">
+        <cursorShape>ArrowCursor</cursorShape>
+       </property>
+       <property name="autoFillBackground">
+        <bool>true</bool>
+       </property>
        <property name="text">
         <string>Delete</string>
        </property>
