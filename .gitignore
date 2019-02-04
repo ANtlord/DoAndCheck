@@ -1,2 +1,5 @@
 .flake8
 .vimrc
+doandcheck.egg-info
+__pycache__
+*.pyc
