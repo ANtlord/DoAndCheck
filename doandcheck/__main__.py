@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtGui import QGuiApplication
+from PyQt5.QtQml import QQmlApplicationEngine
 from typing import Callable
 
 
@@ -183,13 +185,10 @@ class Ui_Form(object):
 
 
 def main():
-    app = QtWidgets.QApplication(sys.argv)
-    widget = Widget()
-    trayIcon = SystemTrayIcon(QtGui.QIcon("icon_32.png"), widget)
-    trayIcon.show()
-    ui = Ui_Form()
-    ui.setupUi(widget)
-    widget.show()
+    app = QGuiApplication(sys.argv)
+    engine = QQmlApplicationEngine()
+    engine.load('qml/qml.qml')
+    engine.quit.connect(app.quit)
     sys.exit(app.exec_())
 
 
