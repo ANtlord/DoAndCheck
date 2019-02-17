@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import sys
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets, QtQuick
 from PyQt5.QtGui import QGuiApplication
 from PyQt5.QtQml import QQmlApplicationEngine
 from typing import Callable
@@ -186,8 +186,9 @@ class Ui_Form(object):
 
 def main():
     app = QGuiApplication(sys.argv)
+    QtQuick.QQuickWindow.setSceneGraphBackend(QtQuick.QSGRendererInterface.Software)
     engine = QQmlApplicationEngine()
-    engine.load('qml/qml.qml')
+    engine.load('qml/main.qml')
     engine.quit.connect(app.quit)
     sys.exit(app.exec_())
 
