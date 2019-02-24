@@ -21,3 +21,12 @@ the future. So the solution is
 from PyQt5 import QtQuick
 QtQuick.QQuickWindow.setSceneGraphBackend(QtQuick.QSGRendererInterface.Software)
 ```
+
+I encountered issues related to features of layouts. I picked Row and Column objects to split the
+windows onto base areas. I set ListView object and buttons in the layouts and I got a couple of
+errors. All of them were about wrong usage of `anchors.*` properties. The error is
+```
+QML ListView: Detected anchors on an item that is managed by a layout. This is undefined behavior;
+use Layout.alignment instead.
+```
+So I fixed it by moving my layouts in Item objects. That's it!

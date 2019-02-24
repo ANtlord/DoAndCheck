@@ -1,6 +1,7 @@
 import QtQuick 2.11
 import QtQuick.Window 2.11
 import QtQuick.Controls 2.3
+import QtQuick.Layouts 1.3
 
 Window {
     id: window
@@ -8,45 +9,85 @@ Window {
     width: 640
     height: 480
     title: qsTr("Hello World")
+    minimumWidth: 640
+    minimumHeight: 480
 
-    Column {
+    ColumnLayout {
         id: column
-        x: 0
-        y: 0
-        width: 640
-        height: 480
-    }
+        anchors.fill: parent
 
-    Row {
-        id: row
-        y: 385
-        height: 95
-        anchors.right: parent.right
-        anchors.rightMargin: 0
-        anchors.left: parent.left
-        anchors.leftMargin: 0
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 0
-    }
+        RowLayout {
+            id: topRow
 
-    Button {
-        id: button
-        y: 413
-        text: qsTr("Button")
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 27
-        anchors.left: parent.left
-        anchors.leftMargin: 16
-    }
+            Item {
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                ListView {
+                    anchors.fill: parent
+                    id: checkListView
+                    interactive: true
+                    model: ListModel {
+                        ListElement {
+                            name: "Grey"
+                            colorCode: "grey"
+                        }
 
-    Button {
-        id: button1
-        x: 518
-        y: 413
-        text: qsTr("Button")
-        anchors.right: parent.right
-        anchors.rightMargin: 22
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 27
+                        ListElement {
+                            name: "Red"
+                            colorCode: "red"
+                        }
+
+                        ListElement {
+                            name: "Blue"
+                            colorCode: "blue"
+                        }
+
+                        ListElement {
+                            name: "Green"
+                            colorCode: "green"
+                        }
+                    }
+                    delegate: CheckableListElement{}
+                }
+            }
+
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 50
+            color: "red"
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: spacing
+                anchors.rightMargin: spacing
+                id: bottomRow
+
+                spacing: 5
+
+                Button {
+                    id: addButton
+                    text: qsTr("Add")
+                    Layout.fillWidth: true
+                }
+
+                Button {
+                    id: changeButton
+                    text: qsTr("Change")
+                }
+
+                Button {
+                    id: deleteButton
+                    text: qsTr("Delete")
+                }
+
+                Button {
+                    id: clearButton
+                    text: qsTr("Clear")
+                }
+
+            }
+        }
+
     }
 }
