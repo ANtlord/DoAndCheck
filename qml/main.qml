@@ -16,48 +16,48 @@ Window {
         id: column
         anchors.fill: parent
 
-//        RowLayout {
-//            id: topRow
+        RowLayout {
+            id: topRow
 
-//            Item {
-//                Layout.fillHeight: true
-//                Layout.fillWidth: true
+            Item {
+                Layout.fillHeight: true
+                Layout.fillWidth: true
 
-//                ListView {
-//                    anchors.fill: parent
-//                    id: checkListView
-//                    interactive: true
-//                    focus: true
-//                    model: ListModel {
-//                        ListElement {
-//                            name: "Grey"
-//                            colorCode: "grey"
-//                            inputState: true
-//                        }
+                ListView {
+                    anchors.fill: parent
+                    id: checkListView
+                    interactive: true
+                    focus: true
+                    model: ListModel {
+                        ListElement {
+                            name: "Grey"
+                            colorCode: "grey"
+                            inputState: true
+                        }
 
-//                        ListElement {
-//                            name: "Red"
-//                            colorCode: "red"
-//                            inputState: false
-//                        }
+                        ListElement {
+                            name: "Red"
+                            colorCode: "red"
+                            inputState: false
+                        }
 
-//                        ListElement {
-//                            name: "Blue"
-//                            colorCode: "blue"
-//                            inputState: false
-//                        }
+                        ListElement {
+                            name: "Blue"
+                            colorCode: "blue"
+                            inputState: false
+                        }
 
-//                        ListElement {
-//                            name: "Green"
-//                            colorCode: "green"
-//                            inputState: false
-//                        }
-//                    }
-//                    delegate: CheckableListElement{}
-//                }
-//            }
+                        ListElement {
+                            name: "Green"
+                            colorCode: "green"
+                            inputState: false
+                        }
+                    }
+                    delegate: CheckableListElement{}
+                }
+            }
 
-//        }
+        }
 
         Item {
             Layout.fillWidth: true

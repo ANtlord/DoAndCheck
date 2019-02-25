@@ -37,3 +37,8 @@ Where should I go? I need to get this done with QML or Python. I hope Python.
 
 OMG There is a segfault on quit. QPixmap: Must construct a QGuiApplication before a QPixmap. So ok.
 It's not the first segfault in my life. Even with Python. Let's go Google.
+
+As usual Google doesn't help. I tried to use PySide2 instead of PyQt5. So it avoids the segfault but
+flickering returns. I can't fix it using PySide because the Qt binding doesn't have QSGRendererInterface.
+Checkout the [link](https://wiki.qt.io/Qt_for_Python_Missing_Bindings). Reading that I assume that
+PyQt covers Qt API better that PySide2 regardless the fact that PySide2 is official.
