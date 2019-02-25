@@ -30,3 +30,10 @@ QML ListView: Detected anchors on an item that is managed by a layout. This is u
 use Layout.alignment instead.
 ```
 So I fixed it by moving my layouts in Item objects. That's it!
+
+
+Now the list is ready and buttons are shown. So I need to make some work on keyboard shortcuts.
+Where should I go? I need to get this done with QML or Python. I hope Python.
+
+OMG There is a segfault on quit. QPixmap: Must construct a QGuiApplication before a QPixmap. So ok.
+It's not the first segfault in my life. Even with Python. Let's go Google.

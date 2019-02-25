@@ -16,47 +16,53 @@ Window {
         id: column
         anchors.fill: parent
 
-        RowLayout {
-            id: topRow
+//        RowLayout {
+//            id: topRow
 
-            Item {
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-                ListView {
-                    anchors.fill: parent
-                    id: checkListView
-                    interactive: true
-                    model: ListModel {
-                        ListElement {
-                            name: "Grey"
-                            colorCode: "grey"
-                        }
+//            Item {
+//                Layout.fillHeight: true
+//                Layout.fillWidth: true
 
-                        ListElement {
-                            name: "Red"
-                            colorCode: "red"
-                        }
+//                ListView {
+//                    anchors.fill: parent
+//                    id: checkListView
+//                    interactive: true
+//                    focus: true
+//                    model: ListModel {
+//                        ListElement {
+//                            name: "Grey"
+//                            colorCode: "grey"
+//                            inputState: true
+//                        }
 
-                        ListElement {
-                            name: "Blue"
-                            colorCode: "blue"
-                        }
+//                        ListElement {
+//                            name: "Red"
+//                            colorCode: "red"
+//                            inputState: false
+//                        }
 
-                        ListElement {
-                            name: "Green"
-                            colorCode: "green"
-                        }
-                    }
-                    delegate: CheckableListElement{}
-                }
-            }
+//                        ListElement {
+//                            name: "Blue"
+//                            colorCode: "blue"
+//                            inputState: false
+//                        }
 
-        }
+//                        ListElement {
+//                            name: "Green"
+//                            colorCode: "green"
+//                            inputState: false
+//                        }
+//                    }
+//                    delegate: CheckableListElement{}
+//                }
+//            }
 
-        Rectangle {
+//        }
+
+        Item {
             Layout.fillWidth: true
             Layout.preferredHeight: 50
-            color: "red"
+            focus: false
             RowLayout {
                 anchors.fill: parent
                 anchors.leftMargin: spacing
