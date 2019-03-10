@@ -2,6 +2,7 @@
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 from typing import Callable
+from doandcheck import state
 
 
 def build_list_item() -> QtWidgets.QListWidgetItem:
@@ -15,7 +16,7 @@ def build_list_item() -> QtWidgets.QListWidgetItem:
     item.setForeground(brush)
     item.setFlags(
         QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsDragEnabled |
-        QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled
+        QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable
     )
     return item
 
@@ -31,54 +32,63 @@ def _build_btn(
 
 
 class Widget(QtWidgets.QWidget):
+    def __init__(self):
+        self._state = state.Idle(self)
+        super().__init__()
+
+    def on_start_editing(self):
+        print('on_start_editing')
+
     def closeEvent(self, event):
         super().closeEvent(event)
         self.hide()
 
+    def edit(self):
+        self._state.edit()
 
-class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
-    def __init__(self, icon, parent: Widget):
-        super().__init__(icon, parent)
-        self.activated.connect(self.toggle_hidden)
-        self.flag = False
-        self.setToolTip("Do And Check")
+    def idle(self):
+        self._state.idle()
 
-    def toggle_hidden(self):
-        widget = self.parent()
-        if widget.isVisible():
-            self.parent().hide()
-        else:
-            self.parent().show()
-            self.parent().activateWindow()
+    def resume(self):
+        self._state.resume()
 
+    def event(self, event: QtCore.QEvent):
+        print(event.type() )
+        if event.type() == QtCore.QEvent.Type.WindowActivate:
+            self.resume()
+        return super().event(event)
 
-class Ui_Form(object):
-    def setupUi(self, Form: Widget):
-        Form.setObjectName("Form")
-        Form.resize(540, 313)
+    #  def _start_current_item_edition(self):
+        #  """Adds a flag provides an editing to current item and start editing of the item."""
+
+    def setupUi(self):
+        self.setObjectName("Form")
+        self.resize(540, 313)
 
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("icon_32.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        Form.setWindowIcon(icon)
+        self.setWindowIcon(icon)
 
-        self.verticalLayout_2 = QtWidgets.QVBoxLayout(Form)
+        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.verticalLayout = QtWidgets.QVBoxLayout()
         self.verticalLayout.setObjectName("verticalLayout")
-        self.listWidget = QtWidgets.QListWidget(Form)
+        self.listWidget = ListWidget(self)
         self.listWidget.setObjectName("listWidget")
         self.listWidget.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
+        self.listWidget.itemDoubleClicked.connect(self.edit)
+        self.listWidget.currentTextChanged.connect(self.idle)
 
         self.verticalLayout.addWidget(self.listWidget)
         self.verticalLayout_2.addLayout(self.verticalLayout)
         self.buttons_layout = QtWidgets.QHBoxLayout()
         self.buttons_layout.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
         self.buttons_layout.setObjectName("buttons_layout")
-        self.init_buttons(self.buttons_layout, Form)
+        self.init_buttons(self.buttons_layout, self)
         self.verticalLayout_2.addLayout(self.buttons_layout)
 
-        self.retranslateUi(Form)
-        QtCore.QMetaObject.connectSlotsByName(Form)
+        self.retranslateUi()
+        QtCore.QMetaObject.connectSlotsByName(self)
         self.listWidget.clicked.connect(self.check_item)
         self.init_shortcuts()
 
@@ -136,24 +146,16 @@ class Ui_Form(object):
         self.delete_btn = _build_btn("delete_btn", self.remove, layout, form)
         self.clear_btn = _build_btn("clear_btn", self.clear, layout, form)
 
-    def _start_current_item_edition(self):
-        """Adds a flag provides an editing to current item and start editing of the item."""
-        item = self.listWidget.currentItem()
-        flags = item.flags()
-        item.setFlags(flags | QtCore.Qt.ItemIsEditable)
-        self.listWidget.editItem(item)
-        item.setFlags(flags)
-
     def change(self):
         """Change current item."""
-        self._start_current_item_edition()
+        self.edit()
 
     def add(self):
         """Add an item."""
         item = build_list_item()
         self.listWidget.addItem(item)
         self.listWidget.setCurrentItem(item)
-        self._start_current_item_edition()
+        self.edit()
 
     def remove(self):
         """Remove current item."""
@@ -170,9 +172,9 @@ class Ui_Form(object):
         """Remove all items."""
         self.listWidget.clear()
 
-    def retranslateUi(self, Form):
+    def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "Do And Check"))
+        self.setWindowTitle(_translate("Form", "Do And Check"))
         __sortingEnabled = self.listWidget.isSortingEnabled()
         self.listWidget.setSortingEnabled(False)
         self.listWidget.setSortingEnabled(__sortingEnabled)
@@ -182,13 +184,33 @@ class Ui_Form(object):
         self.clear_btn.setText(_translate("Form", "Clear"))
 
 
+class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
+    def __init__(self, icon, parent: Widget):
+        super().__init__(icon, parent)
+        self.activated.connect(self.toggle_hidden)
+        self.flag = False
+        self.setToolTip("Do And Check")
+
+    def toggle_hidden(self):
+        widget = self.parent()
+        if widget.isVisible():
+            self.parent().hide()
+        else:
+            self.parent().show()
+            self.parent().activateWindow()
+
+
+
+class ListWidget(QtWidgets.QListWidget):
+    pass
+
+
 def main():
     app = QtWidgets.QApplication(sys.argv)
     widget = Widget()
     trayIcon = SystemTrayIcon(QtGui.QIcon("icon_32.png"), widget)
     trayIcon.show()
-    ui = Ui_Form()
-    ui.setupUi(widget)
+    widget.setupUi()
     widget.show()
     sys.exit(app.exec_())
 

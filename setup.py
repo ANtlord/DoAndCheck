@@ -1,6 +1,7 @@
 import sys
 from setuptools import find_packages, setup
 
+
 def get_packages():
     kwargs = {
         'exclude': ['tests.*', 'tests'],
@@ -8,6 +9,7 @@ def get_packages():
     if 'flake8' in sys.argv:
         del kwargs['exclude']
     return find_packages(**kwargs)
+
 
 setup(
     name='doandcheck',
