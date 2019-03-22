@@ -31,9 +31,12 @@ class Editing(Base):
         self.resume()
 
     def idle(self):
+        listWidget = self._widget.listWidget
+        listWidget.closePersistentEditor(listWidget.currentItem())
         Idle(self._widget)
 
     def resume(self):
         listWidget = self._widget.listWidget
         if listWidget.count():
-            listWidget.editItem(listWidget.currentItem())
+            #  listWidget.editItem(listWidget.currentItem())
+            listWidget.openPersistentEditor(listWidget.currentItem())

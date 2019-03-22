@@ -2,12 +2,13 @@
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 from typing import Callable
+from doandcheck.listwidget import ListWidget, ListWidgetItem
 from doandcheck import state
 
 
 def build_list_item() -> QtWidgets.QListWidgetItem:
     """Create an item for a check list."""
-    item = QtWidgets.QListWidgetItem()
+    item = ListWidgetItem()
     font = QtGui.QFont()
     font.setStrikeOut(False)
     item.setFont(font)
@@ -52,14 +53,20 @@ class Widget(QtWidgets.QWidget):
     def resume(self):
         self._state.resume()
 
-    def event(self, event: QtCore.QEvent):
-        print(event.type() )
-        if event.type() == QtCore.QEvent.Type.WindowActivate:
-            self.resume()
-        return super().event(event)
+    def is_idle(self):
+        return type(self._state) == state.Idle
 
-    #  def _start_current_item_edition(self):
-        #  """Adds a flag provides an editing to current item and start editing of the item."""
+    #  def keyPressEvent(self, event: QtGui.QKeyEvent):
+        #  print(self.__class__, 'keyPressEvent')
+        #  return False
+        #  return super().keyPressEvent(event)
+
+    #  def event(self, event: QtCore.QEvent):
+        #  if event.type() == 
+        #  event.ignore()
+        #  #  print(event)
+        #  return False
+        #  return super().event(event)
 
     def setupUi(self):
         self.setObjectName("Form")
@@ -110,6 +117,7 @@ class Widget(QtWidgets.QWidget):
             'Shift+Up': self.move_item_up,
             'Shift+Down': self.move_item_down,
             'Ctrl+Q': QtWidgets.qApp.quit,
+            'Ctrl+Return': self.idle,
         }
         for key, callback in shortcuts.items():
             list_widget_shortcut = QtWidgets.QShortcut(QtGui.QKeySequence(key), self.listWidget)
@@ -125,10 +133,12 @@ class Widget(QtWidgets.QWidget):
 
     def move_item_up(self):
         """Move current item to up by one position."""
+        self.idle()
         self._move_current_item(0, lambda x: x - 1)
 
     def move_item_down(self):
         """Move current item to down by one position."""
+        self.idle()
         last_index = self.listWidget.count() - 1
         self._move_current_item(last_index, lambda x: x + 1)
 
@@ -152,6 +162,7 @@ class Widget(QtWidgets.QWidget):
 
     def add(self):
         """Add an item."""
+        self.idle()
         item = build_list_item()
         self.listWidget.addItem(item)
         self.listWidget.setCurrentItem(item)
@@ -163,6 +174,7 @@ class Widget(QtWidgets.QWidget):
 
     def check_item(self):
         """Check current item."""
+        #  self.idle()
         item = self.listWidget.currentItem()
         font = QtGui.QFont()
         font.setStrikeOut(not item.font().strikeOut())
@@ -198,11 +210,6 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         else:
             self.parent().show()
             self.parent().activateWindow()
-
-
-
-class ListWidget(QtWidgets.QListWidget):
-    pass
 
 
 def main():
