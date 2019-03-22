@@ -36,7 +36,7 @@ class TaskModel(QtCore.QAbstractListModel):
             return self._data[index.row()]
         return None
 
-    def setData(self, index: QtCore.QModelIndex, value):
+    def setData(self, index: QtCore.QModelIndex, value, role):
         if not index.isValid():
             print('it is not valid')
             return False
@@ -61,16 +61,17 @@ class ListWidgetItem(QtWidgets.QListWidgetItem):
         return super().keyPressEvent(event)
 
 
-class ListWidget(QtWidgets.QListWidget):
-    def event(self, event: QtCore.QEvent):
-        if event.type() == QtCore.QEvent.KeyRelease and not self.parentWidget().is_idle():
-            ch = self.children()
-            for c in ch:
-                print('---->', type(c))
-            print(self.__class__, event.type())
-            event.accept()
-            return False
-        return super().event(event)
+class ListWidget(QtWidgets.QListView):
+    pass
+    #  def event(self, event: QtCore.QEvent):
+        #  if event.type() == QtCore.QEvent.KeyRelease and not self.parentWidget().is_idle():
+            #  ch = self.children()
+            #  for c in ch:
+                #  print('---->', type(c))
+            #  print(self.__class__, event.type())
+            #  event.accept()
+            #  return False
+        #  return super().event(event)
 
     #  def dataChanged(self, top: QtCore.QModelIndex, bottom: QtCore.QModelIndex, *args, **kwargs):
         #  print('dataChanged', top.row(), bottom.row(), args, kwargs)
@@ -85,12 +86,29 @@ class ListWidget(QtWidgets.QListWidget):
         #  super().__init__(*args, **kwargs)
 
 
+class LineEdit(QtWidgets.QLineEdit):
+    def event(self, event: QtCore.QEvent):
+        #  print(self.__class__, event)
+        return super().event(event)
+
+
 class TaskDelegate(QtWidgets.QStyledItemDelegate):
-    def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex):
-        pass
-    #  def createEditor(self, parent, *args, **kwargs):
-        #  return QtWidgets.QLineEdit(parent)
-        #  return None
+    def __init__(self, mainWindow, *args, **kwargs):
+        self._mainWindow = mainWindow 
+        super().__init__(*args, **kwargs)
+
+    def setEditorData(self, editor: QtWidgets.QWidget, index: QtCore.QModelIndex):
+        text = index.model().data(index, QtCore.Qt.DisplayRole)
+        editor.setText(text)
+
+    #  def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex):
+        #  pass
+    def createEditor(self, parent, option, index):
+        lineEdit = LineEdit(parent)
+        self._mainWindow.itemLineEdit = lineEdit
+        #  text = index.model().data(index, QtCore.Qt.DisplayRole)
+        #  lineEdit.setText(text)
+        return lineEdit
         #  ret = super().createEditor(*args, **kwargs)
         #  print(args, kwargs, ret)
         #  return ret

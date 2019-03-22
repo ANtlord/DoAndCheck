@@ -2,7 +2,7 @@
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 from typing import Callable
-from doandcheck.listwidget import ListWidget, ListWidgetItem
+from doandcheck.listwidget import ListWidget, ListWidgetItem, TaskModel, TaskDelegate
 from doandcheck import state
 
 
@@ -61,12 +61,14 @@ class Widget(QtWidgets.QWidget):
         #  return False
         #  return super().keyPressEvent(event)
 
-    #  def event(self, event: QtCore.QEvent):
-        #  if event.type() == 
+    def event(self, event: QtCore.QEvent):
+        if event.type() == QtCore.QEvent.WindowActivate:
+            print('Focus on window', event.type())
+            self.itemLineEdit.setFocus()
         #  event.ignore()
         #  #  print(event)
         #  return False
-        #  return super().event(event)
+        return super().event(event)
 
     def setupUi(self):
         self.setObjectName("Form")
@@ -83,8 +85,15 @@ class Widget(QtWidgets.QWidget):
         self.listWidget = ListWidget(self)
         self.listWidget.setObjectName("listWidget")
         self.listWidget.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
-        self.listWidget.itemDoubleClicked.connect(self.edit)
-        self.listWidget.currentTextChanged.connect(self.idle)
+        model = TaskModel(['123'])
+        delegate = TaskDelegate(mainWindow=self)
+        self.listWidget.setModel(model)
+        self.listWidget.setItemDelegate(delegate)
+        index = model.index(0)
+        self.listWidget.openPersistentEditor(index)
+        #  self.listWidget.closePersistentEditor(index)
+        #  self.listWidget.itemDoubleClicked.connect(self.edit)
+        #  self.listWidget.currentTextChanged.connect(self.idle)
 
         self.verticalLayout.addWidget(self.listWidget)
         self.verticalLayout_2.addLayout(self.verticalLayout)
@@ -98,7 +107,7 @@ class Widget(QtWidgets.QWidget):
         QtCore.QMetaObject.connectSlotsByName(self)
         self.listWidget.clicked.connect(self.check_item)
         self.init_shortcuts()
-
+        
     def init_shortcuts(self):
         """Initialization of shortcuts.
 
@@ -163,9 +172,9 @@ class Widget(QtWidgets.QWidget):
     def add(self):
         """Add an item."""
         self.idle()
-        item = build_list_item()
-        self.listWidget.addItem(item)
-        self.listWidget.setCurrentItem(item)
+        #  item = build_list_item()
+        #  self.listWidget.addItem(item)
+        #  self.listWidget.setCurrentItem(item)
         self.edit()
 
     def remove(self):
@@ -175,7 +184,7 @@ class Widget(QtWidgets.QWidget):
     def check_item(self):
         """Check current item."""
         #  self.idle()
-        item = self.listWidget.currentItem()
+        #  item = self.listWidget.currentItem()
         font = QtGui.QFont()
         font.setStrikeOut(not item.font().strikeOut())
         item.setFont(font)
@@ -187,9 +196,9 @@ class Widget(QtWidgets.QWidget):
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
         self.setWindowTitle(_translate("Form", "Do And Check"))
-        __sortingEnabled = self.listWidget.isSortingEnabled()
-        self.listWidget.setSortingEnabled(False)
-        self.listWidget.setSortingEnabled(__sortingEnabled)
+        #  __sortingEnabled = self.listWidget.isSortingEnabled()
+        #  self.listWidget.setSortingEnabled(False)
+        #  self.listWidget.setSortingEnabled(__sortingEnabled)
         self.add_btn.setText(_translate("Form", "Add"))
         self.change_btn.setText(_translate("Form", "Change"))
         self.delete_btn.setText(_translate("Form", "Delete"))
