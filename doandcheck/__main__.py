@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import sys
+import logging
 from PyQt5 import QtCore, QtGui, QtWidgets
 from typing import Callable
 from doandcheck.listwidget import ListWidget, ListWidgetItem, TaskModel, TaskDelegate
@@ -63,11 +64,7 @@ class Widget(QtWidgets.QWidget):
 
     def event(self, event: QtCore.QEvent):
         if event.type() == QtCore.QEvent.WindowActivate:
-            print('Focus on window', event.type())
-            self.itemLineEdit.setFocus()
-        #  event.ignore()
-        #  #  print(event)
-        #  return False
+            self.resume()
         return super().event(event)
 
     def setupUi(self):
@@ -85,12 +82,12 @@ class Widget(QtWidgets.QWidget):
         self.listWidget = ListWidget(self)
         self.listWidget.setObjectName("listWidget")
         self.listWidget.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
-        model = TaskModel(['123'])
+        model = TaskModel([])
         delegate = TaskDelegate(mainWindow=self)
         self.listWidget.setModel(model)
         self.listWidget.setItemDelegate(delegate)
-        index = model.index(0)
-        self.listWidget.openPersistentEditor(index)
+        #  index = model.index(0)
+        #  self.listWidget.openPersistentEditor(index)
         #  self.listWidget.closePersistentEditor(index)
         #  self.listWidget.itemDoubleClicked.connect(self.edit)
         #  self.listWidget.currentTextChanged.connect(self.idle)
@@ -126,19 +123,19 @@ class Widget(QtWidgets.QWidget):
             'Shift+Up': self.move_item_up,
             'Shift+Down': self.move_item_down,
             'Ctrl+Q': QtWidgets.qApp.quit,
-            'Ctrl+Return': self.idle,
+            'Return': self.idle,
         }
         for key, callback in shortcuts.items():
             list_widget_shortcut = QtWidgets.QShortcut(QtGui.QKeySequence(key), self.listWidget)
             list_widget_shortcut.activated.connect(callback)
 
     def _move_current_item(self, stop_row, new_row_func: Callable[[int], int]):
-        row = self.listWidget.currentRow()
-        if row == stop_row:
+        row = self.listWidget.currentIndex()
+        if row.row() == stop_row:
             return
-        item = self.listWidget.takeItem(row)
-        self.listWidget.insertItem(new_row_func(row), item)
-        self.listWidget.setCurrentRow(new_row_func(row))
+        item = self.listWidget.takeItem(row.row())
+        self.listWidget.insertItem(new_row_func(row.row()), item)
+        self.listWidget.setCurrentRow(new_row_func(row.row()))
 
     def move_item_up(self):
         """Move current item to up by one position."""
@@ -171,11 +168,7 @@ class Widget(QtWidgets.QWidget):
 
     def add(self):
         """Add an item."""
-        self.idle()
-        #  item = build_list_item()
-        #  self.listWidget.addItem(item)
-        #  self.listWidget.setCurrentItem(item)
-        self.edit()
+        self._state.add()
 
     def remove(self):
         """Remove current item."""
@@ -222,6 +215,10 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
 
 
 def main():
+    logging.basicConfig(
+        level=10,
+        format='%(name)s %(levelname)s %(message)s'
+    )
     app = QtWidgets.QApplication(sys.argv)
     widget = Widget()
     trayIcon = SystemTrayIcon(QtGui.QIcon("icon_32.png"), widget)

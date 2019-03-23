@@ -1,5 +1,10 @@
+import logging
+
 from typing import NamedTuple
 from PyQt5 import QtCore, QtWidgets, QtGui
+
+
+logger = logging.getLogger()
 
 
 #  class ListWidget(QtWidgets.QListWidget):
@@ -16,32 +21,44 @@ class TaskModel(QtCore.QAbstractListModel):
         super().__init__(*args, **kwargs)
         self._data = data
 
-    def insertRows(self, row: int, count: int, index: QtCore.QModelIndex):
-        if not index.isValid():
-            print('it is not valid')
+    def insertRows(self, row: int, count: int, index: QtCore.QModelIndex = None):
+        if index is None:
+            index = QtCore.QModelIndex()
+        self.beginInsertRows(index, row, row + count - 1)
+        new_data = [''] * count
+        self._data = self._data[:row] + new_data + self._data[row:]
+        self.endInsertRows()
+        logger.debug('data after inserting `%s`', self._data)
+        return True
+
+    def removeRows(self, row: int, count: int, parent: QtCore.QModelIndex = None):
+        if parent is None:
+            parent = QtCore.QModelIndex()
+        if not parent.isValid():
+            logger.debug('removeRows: parent is not valid')
             return False
 
-        self.beginInsertRows(index, row, row + count - 1)
-        new_data = [None] * count
-        for _ in range(row + 1):
-            self._data = self._data[:row] + new_data + self._data[row:]
-        self.endInsertRows()
+        self.beginRemoveRows(parent, row, row + count - 1)
+        del self._data[row:row + count]
+        self.endRemoveRows()
+        logger.debug('data after removing `%s`', self._data)
         return True
 
     def rowCount(self, index: QtCore.QModelIndex = None):
         return len(self._data)
 
-    def data(self, index: QtCore.QModelIndex, role: int):
-        if role == QtCore.Qt.DisplayRole:
+    def data(self, index: QtCore.QModelIndex, role: int = QtCore.Qt.DisplayRole):
+        if role in (QtCore.Qt.DisplayRole, QtCore.Qt.EditRole):
             return self._data[index.row()]
         return None
 
-    def setData(self, index: QtCore.QModelIndex, value, role):
+    def setData(self, index: QtCore.QModelIndex, value, role = QtCore.Qt.EditRole):
         if not index.isValid():
-            print('it is not valid')
+            logger.debug('setData: it is not valid')
             return False
         self._data[index.row()] = value
         self.dataChanged.emit(index, index, [0, 2])
+        logger.debug('data after setting `%s`', self._data)
         return True
     
     def flags(self, index: QtCore.QModelIndex):
@@ -53,44 +70,57 @@ class TaskModel(QtCore.QAbstractListModel):
 
 class ListWidgetItem(QtWidgets.QListWidgetItem):
     def event(self, event: QtCore.QEvent):
-        print(self.__class__, event.type())
+        logger.debug(self.__class__, event.type())
         return super().event(event)
 
     def keyPressEvent(self, event: QtGui.QKeyEvent):
-        print(self.__class__, 'keyPressEvent')
+        logger.debug(self.__class__, 'keyPressEvent')
         return super().keyPressEvent(event)
 
 
 class ListWidget(QtWidgets.QListView):
-    pass
-    #  def event(self, event: QtCore.QEvent):
-        #  if event.type() == QtCore.QEvent.KeyRelease and not self.parentWidget().is_idle():
-            #  ch = self.children()
-            #  for c in ch:
-                #  print('---->', type(c))
-            #  print(self.__class__, event.type())
-            #  event.accept()
-            #  return False
-        #  return super().event(event)
+    def add(self):
+        model: TaskModel = self.model()
+        #  logger.debug('row count before add', model.rowCount())
+        #  index = model.index(model.rowCount() - 1)
+        model.insertRows(model.rowCount(), 1, None)
+        #  logger.debug('row count after add', model.rowCount())
 
-    #  def dataChanged(self, top: QtCore.QModelIndex, bottom: QtCore.QModelIndex, *args, **kwargs):
-        #  print('dataChanged', top.row(), bottom.row(), args, kwargs)
-        #  return super().dataChanged(top, bottom, *args, **kwargs)
+    def count(self):
+        return self.model().rowCount()
 
-    #  def setData(self, *args, **kwargs):
-        #  print('setData')
-        #  return False
-        #  print('focusOutEvent', args)
-        #  return super().focusOutEvent(*args, **kwargs)
-    #  def __init__(self, *args, **kwargs):
-        #  super().__init__(*args, **kwargs)
+    def takeItem(self, row: int):
+        model: TaskModel = self.model()
+        index = model.index(row, 0)
+        data = model.data(index)
+        logger.debug('Remove row %s', index.row())
+        res = model.removeRow(index.row(), index)
+
+        if row > self.count() - 1:
+            self.setCurrentIndex(model.index(self.count() - 1))
+        return data
+
+    def insertItem(self, row: int, value: str):
+        model: TaskModel = self.model()
+        model.insertRows(row, 1, model.index(min(row, self.count() - 1), 0))
+        index = model.index(row, 0)
+        model.setData(index, value)
+        logger.debug('after set data `%s`', model.data(index))
+
+    def setCurrentRow(self, row: int):
+        model: TaskModel = self.model()
+        index = model.index(row, 0)
+        self.setCurrentIndex(index)
+
+    def currentRow(self):
+        model: TaskModel = self.model()
+        return self.currentIndex().row()
 
 
 class LineEdit(QtWidgets.QLineEdit):
-    def event(self, event: QtCore.QEvent):
-        #  print(self.__class__, event)
-        return super().event(event)
-
+    def keyPressEvent(self, event: QtGui.QKeyEvent):
+        if event.key() not in (QtCore.Qt.Key_Up, QtCore.Qt.Key_Down, QtCore.Qt.Key_Tab, QtCore.Qt.Key_Tab):
+            super().keyPressEvent(event)
 
 class TaskDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, mainWindow, *args, **kwargs):
@@ -101,25 +131,9 @@ class TaskDelegate(QtWidgets.QStyledItemDelegate):
         text = index.model().data(index, QtCore.Qt.DisplayRole)
         editor.setText(text)
 
-    #  def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex):
-        #  pass
     def createEditor(self, parent, option, index):
         lineEdit = LineEdit(parent)
+        shortcut = QtWidgets.QShortcut(QtGui.QKeySequence('Shift+Tab'), lineEdit)
+        shortcut.activated.connect(lambda: None)
         self._mainWindow.itemLineEdit = lineEdit
-        #  text = index.model().data(index, QtCore.Qt.DisplayRole)
-        #  lineEdit.setText(text)
         return lineEdit
-        #  ret = super().createEditor(*args, **kwargs)
-        #  print(args, kwargs, ret)
-        #  return ret
-
-    #  def editorEvent(self, *args, **kwargs):
-        #  print('editorEvent')
-        #  return False
-
-    #  def destroyEditor(self, *args, **kwargs):
-        #  print('destroyEditor')
-        #  return None
-        #  ret = super().destroyEditor(*args, **kwargs)
-        #  print(args, kwargs, ret)
-        #  return ret
