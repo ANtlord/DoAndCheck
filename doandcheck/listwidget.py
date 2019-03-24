@@ -25,7 +25,7 @@ class TaskModel(QtCore.QAbstractListModel):
         if index is None:
             index = QtCore.QModelIndex()
         self.beginInsertRows(index, row, row + count - 1)
-        new_data = [''] * count
+        new_data = [Task(False, '')] * count
         self._data = self._data[:row] + new_data + self._data[row:]
         self.endInsertRows()
         logger.debug('data after inserting `%s`', self._data)
@@ -49,14 +49,27 @@ class TaskModel(QtCore.QAbstractListModel):
 
     def data(self, index: QtCore.QModelIndex, role: int = QtCore.Qt.DisplayRole):
         if role in (QtCore.Qt.DisplayRole, QtCore.Qt.EditRole):
-            return self._data[index.row()]
+            return self._data[index.row()].caption
+        elif role == QtCore.Qt.FontRole:
+            font = QtGui.QFont()
+            val = self._data[index.row()].is_checked
+            font.setStrikeOut(val)
+            return font
         return None
+
+    def get_task(self, row) -> Task:
+        return self._data[row]
 
     def setData(self, index: QtCore.QModelIndex, value, role = QtCore.Qt.EditRole):
         if not index.isValid():
             logger.debug('setData: it is not valid')
             return False
-        self._data[index.row()] = value
+        value_type = type(value)
+        if value_type == str:
+            task: Task = self._data[index.row()]
+            self._data[index.row()] = Task(caption=value, is_checked=task.is_checked)
+        elif value_type == Task:
+            self._data[index.row()] = value
         self.dataChanged.emit(index, index, [0, 2])
         logger.debug('data after setting `%s`', self._data)
         return True
@@ -113,14 +126,19 @@ class ListWidget(QtWidgets.QListView):
         self.setCurrentIndex(index)
 
     def currentRow(self):
-        model: TaskModel = self.model()
         return self.currentIndex().row()
+
+    def clear(self):
+        model = self.model()
+        index = self.currentIndex()
+        model.removeRows(0, self.count(), index)
 
 
 class LineEdit(QtWidgets.QLineEdit):
     def keyPressEvent(self, event: QtGui.QKeyEvent):
         if event.key() not in (QtCore.Qt.Key_Up, QtCore.Qt.Key_Down, QtCore.Qt.Key_Tab, QtCore.Qt.Key_Tab):
             super().keyPressEvent(event)
+
 
 class TaskDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, mainWindow, *args, **kwargs):

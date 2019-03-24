@@ -3,8 +3,11 @@ import sys
 import logging
 from PyQt5 import QtCore, QtGui, QtWidgets
 from typing import Callable
-from doandcheck.listwidget import ListWidget, ListWidgetItem, TaskModel, TaskDelegate
+from doandcheck.listwidget import ListWidget, ListWidgetItem, TaskModel, TaskDelegate, Task
 from doandcheck import state
+
+
+logger = logging.getLogger()
 
 
 def build_list_item() -> QtWidgets.QListWidgetItem:
@@ -177,10 +180,14 @@ class Widget(QtWidgets.QWidget):
     def check_item(self):
         """Check current item."""
         #  self.idle()
-        #  item = self.listWidget.currentItem()
-        font = QtGui.QFont()
-        font.setStrikeOut(not item.font().strikeOut())
-        item.setFont(font)
+        index = self.listWidget.currentIndex()
+        task = self.listWidget.model().get_task(index.row())
+        val = not task.is_checked
+        logger.debug('set val %s', val)
+        self.listWidget.model().setData(index, Task(caption=task.caption, is_checked=val))
+        #  font = QtGui.QFont()
+        #  font.setStrikeOut(not item.font().strikeOut())
+        #  item.setFont(font)
 
     def clear(self):
         """Remove all items."""

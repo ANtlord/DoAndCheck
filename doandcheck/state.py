@@ -58,8 +58,9 @@ class Editing(Base):
 
     def idle(self):
         listWidget = self._widget.listWidget
-        model: TaskModel = listWidget.model()
-        index = model.index(model.rowCount() - 1)
+        #  model: TaskModel = listWidget.model()
+        #  index = model.index(model.rowCount() - 1)
+        index = listWidget.currentIndex()
         listWidget.closePersistentEditor(index)
         Idle(self._widget)
 
