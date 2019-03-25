@@ -7,10 +7,6 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 logger = logging.getLogger()
 
 
-#  class ListWidget(QtWidgets.QListWidget):
-    #  pass
-
-
 class Task(NamedTuple):
     is_checked: bool
     caption: str
@@ -102,10 +98,10 @@ class ListWidget(QtWidgets.QListView):
     def count(self):
         return self.model().rowCount()
 
-    def takeItem(self, row: int):
+    def takeItem(self, row: int) -> Task:
         model: TaskModel = self.model()
         index = model.index(row, 0)
-        data = model.data(index)
+        data = model._data[row]
         logger.debug('Remove row %s', index.row())
         res = model.removeRow(index.row(), index)
 
